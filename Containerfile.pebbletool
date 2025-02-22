@@ -1,0 +1,86 @@
+FROM debian:bullseye
+
+ARG DEVCONTAINER_METADATA
+ARG CREATED_TIMESTAMP
+ARG VCS_REF
+ARG CONTAINER_VERSION
+ARG SDK_VERSION
+ARG SDK_CORE
+ARG SDK_URL
+
+LABEL org.opencontainers.image.authors="FlyinPancake <FlyinPancake@pm.me>"
+LABEL org.opencontainers.image.created="${CREATED_TIMESTAMP}"
+LABEL org.opencontainers.image.title="Pebble Dev Container"
+LABEL org.opencontainers.image.description="A container for developing Pebble apps. Based on Debian 11"
+LABEL org.opencontainers.image.url=""
+LABEL org.opencontainers.image.source=""
+LABEL org.opencontainers.image.documentation=""
+LABEL org.opencontainers.image.version="${CONTAINER_VERSION}"
+LABEL org.opencontainers.image.revision="${VCS_REF}"
+LABEL devcontainer.metadata="${DEVCONTAINER_METADATA:-{}}"
+
+# User
+ARG USERNAME=pebble
+
+
+# Install dependencies
+# Set noninteractive mode, update apt lists, install dependencies and clean up
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get upgrade -y && apt-get -y install --no-install-recommends \
+    git \
+    build-essential \
+    zsh \
+    sudo \
+    python2 \
+    wget \ 
+    curl \
+    python-dev \
+    libsdl1.2debian \
+    libpixman-1-0 \ 
+    libglib2.0-0 \
+    libfreetype6 \
+    npm \ 
+    gcc \
+    libfdt1 && \
+    apt-get clean autoclean &&\
+    apt-get autoremove --yes &&\
+    rm -rf /var/lib/{apt,dpkg,cache,log}/
+
+RUN useradd -m $USERNAME && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME && \
+    mkdir -p /workspace && \
+    chown -R $USERNAME:$USERNAME /workspace
+
+# Install pip and virtualenv
+ADD https://bootstrap.pypa.io/pip/2.7/get-pip.py /tmp/get-pip.py
+RUN python2 /tmp/get-pip.py && \
+    rm /tmp/get-pip.py && \
+    pip install virtualenv
+
+
+
+USER $USERNAME
+
+WORKDIR /home/$USERNAME/pebble-dev
+
+# Download and install the Pebble SDK
+
+RUN curl -sSl ${SDK_URL} | tar -xj
+
+RUN mkdir ~/.pebble-sdk && touch ~/.pebble-sdk/NO_TRACKING
+# Create a virtualenv for the SDK
+RUN cd pebble-sdk-${SDK_VERSION}-linux64 && \
+    virtualenv --python python2 .env && \
+    . .env/bin/activate && \
+    pip install -r requirements.txt
+
+# Add the SDK to the PATH
+RUN echo "export PATH=$PATH:/home/$USERNAME/pebble-dev/pebble-sdk-${SDK_VERSION}-linux64/bin" >> ~/.bashrc && \
+    echo "export PATH=$PATH:/home/$USERNAME/pebble-dev/pebble-sdk-${SDK_VERSION}-linux64/bin" >> ~/.zshrc
+
+ENV PATH=$PATH:/home/$USERNAME/pebble-dev/pebble-sdk-${SDK_VERSION}-linux64/bin
+
+# Install the Pebble toolchain
+RUN printf "y\n" | pebble sdk install ${SDK_CORE}
+

@@ -1,0 +1,9 @@
+- customizations:
+    vscode:
+      settings:
+        go.toolsManagement.checkForUpdates: local
+        go.useLanguageServer: true
+        go.gopath: /go
+      extensions:
+        - golang.Go
+  remoteUser: vscode

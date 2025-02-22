@@ -1,0 +1,6 @@
+pebble_sdk:
+  "4.5": https://developer.rebble.io/s3.amazonaws.com/assets.getpebble.com/pebble-tool/pebble-sdk-4.5-linux64.tar.bz2
+  "4.6-rc2": https://rebble-sdk.s3-us-west-2.amazonaws.com/pebble-sdk-4.6-rc2-linux64.tar.bz2
+
+pebble_core:
+  "4.3": https://github.com/aveao/PebbleArchive/raw/refs/heads/master/SDKCores/sdk-core-4.3.tar.bz2

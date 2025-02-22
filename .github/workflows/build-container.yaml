@@ -1,0 +1,61 @@
+name: Build Pebble Development Container
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build legacy for SDK ${{ matrix.sdk_version }} with Core ${{ matrix.sdk_core }}
+    strategy:
+      matrix:
+        sdk_version:
+          - 4.6-rc2
+          - 4.5
+        sdk_core:
+          - latest
+          - 4.3
+        exclude:
+          # SDK 4.5 is incompatible with latest core
+          - sdk_version: 4.5
+            sdk_core: latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup just
+        uses: extractions/setup-just@v2
+
+      - name: Install buildah
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y buildah
+
+      - name: Set up ghcr.io
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Read version from container_metadata.yaml into action output
+        id: read_version
+        run: |
+          VERSION=$(yq e '.version' container_metadata.yaml)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build Container
+        run: |
+          just build_pebbletool ${{ steps.read_version.outputs.VERSION }}
+
+      - name: Tag Container
+        run: |
+          buildah tag ghcr.io/flyinpancake/pebble-devcontainer:legacy-${{ matrix.sdk_version }}-${{ matrix.sdk_core }}-${{ steps.read_version.outputs.VERSION }} ghcr.io/flyinpancake/pebble-devcontainer:legacy-${{ matrix.sdk_version }}-${{ matrix.sdk_core }}-latest
+
+      - name: Push Container
+        run: |
+          buildah push ghcr.io/flyinpancake/pebble-devcontainer:legacy-${{ matrix.sdk_version }}-${{ matrix.sdk_core }}-latest
+          buildah push ghcr.io/flyinpancake/pebble-devcontainer:legacy-${{ matrix.sdk_version }}-${{ matrix.sdk_core }}-${{ steps.read_version.outputs.VERSION }}
