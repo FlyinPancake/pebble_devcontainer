@@ -24,7 +24,7 @@ jobs:
           # SDK 4.5 is incompatible with latest core
           - sdk_version: 4.5
             sdk_core: latest
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2204
     steps:
       - name: Checkout
         uses: actions/checkout@v4
