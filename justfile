@@ -7,8 +7,8 @@ build_pebbletool tag sdk_version="4.6-rc2" sdk_core="latest":
     set -x pipefail
     # Set the DEVCONTAINER_METADATA environment variable to the contents of the devcontainer_metadata.yaml file
     set -x DEVCONTAINER_METADATA (yq --output-format json --indent 0 e devcontainer_metadata.yaml)
-    set -x CONTAINER_VERSION (yq e '.version' container_metadata.yaml)
-    set -x SDK_URL (yq e '.pebble_sdk."{{ sdk_version }}"' download_urls.yaml)
+    set -x CONTAINER_VERSION (yq '.version' container_metadata.yaml)
+    set -x SDK_URL (yq '.pebble_sdk."{{ sdk_version }}"' download_urls.yaml)
     set -x SDK_VERSION {{ sdk_version }}
     set -x SDK_CORE {{ sdk_core }}
     echo "Building container with SDK version $SDK_VERSION and core $SDK_CORE"

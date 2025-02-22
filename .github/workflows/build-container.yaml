@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup just
         uses: extractions/setup-just@v2
@@ -44,7 +44,7 @@ jobs:
       - name: Read version from container_metadata.yaml into action output
         id: read_version
         run: |
-          VERSION=$(yq e '.version' container_metadata.yaml)
+          VERSION=$(yq '.version' container_metadata.yaml)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build Container
