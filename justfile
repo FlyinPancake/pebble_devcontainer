@@ -26,7 +26,9 @@ build_pebbletool tag sdk_version="4.6-rc2" sdk_core="latest":
     end
     
     
-    buildah build -f Containerfile.pebbletool -t ghcr.io/flyinpancake/pebble-devcontainer:legacy-{{ sdk_version }}-{{ sdk_core }}-{{ tag }} \
+    buildah build \
+        -f Containerfile.pebbletool \
+        -t ghcr.io/flyinpancake/pebble-devcontainer:legacy-{{ sdk_version }}-{{ sdk_core }}-{{ tag }} \
         --build-arg DEVCONTAINER_METADATA=$DEVCONTAINER_METADATA \
         --build-arg CREATED_TIMESTAMP=(date -u +"%Y-%m-%dT%H:%M:%SZ") \
         --build-arg VCS_REF=(git rev-parse HEAD) \
